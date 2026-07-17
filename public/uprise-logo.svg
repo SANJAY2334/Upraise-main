@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="100%" height="100%">
+  <defs>
+    <!-- Background gold gradient -->
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C59341" />
+      <stop offset="25%" stop-color="#E4B869" />
+      <stop offset="50%" stop-color="#FBF0B9" />
+      <stop offset="75%" stop-color="#DFB25E" />
+      <stop offset="100%" stop-color="#BC842C" />
+    </linearGradient>
+
+    <!-- 3D Gold Shading - Left Side (Shadowed) -->
+    <linearGradient id="gold-left" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D4AF37" />
+      <stop offset="40%" stop-color="#AA7C11" />
+      <stop offset="75%" stop-color="#FBF0B9" />
+      <stop offset="100%" stop-color="#916A14" />
+    </linearGradient>
+
+    <!-- 3D Gold Shading - Right Side (Brighter) -->
+    <linearGradient id="gold-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFDF0" />
+      <stop offset="35%" stop-color="#E5C158" />
+      <stop offset="70%" stop-color="#B8860B" />
+      <stop offset="100%" stop-color="#F5DA81" />
+    </linearGradient>
+
+    <!-- Shadow filter for overlapping 3D chevrons -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&amp;display=swap');
+    .logo-title {
+      font-family: 'Playfair Display', 'Cinzel', 'Georgia', 'Times New Roman', serif;
+      font-weight: 700;
+    }
+    .logo-subtitle {
+      font-family: 'Playfair Display', 'Cinzel', 'Georgia', 'Times New Roman', serif;
+      font-weight: 600;
+    }
+  </style>
+
+  <g id="logo-icon">
+    <!-- Starburst at the top -->
+    <g id="star">
+      <path d="M 500,65 L 503,110 L 500,155 L 497,110 Z" fill="url(#gold-right)"/>
+      <path d="M 455,110 L 500,113 L 545,110 L 500,107 Z" fill="url(#gold-right)"/>
+      <path d="M 468,78 L 500,108 L 532,142 L 500,112 Z" fill="url(#gold-right)"/>
+      <path d="M 532,78 L 500,112 L 468,142 L 500,108 Z" fill="url(#gold-right)"/>
+      <circle cx="500" cy="110" r="3.5" fill="url(#gold-right)"/>
+    </g>
+
+    <!-- Chevron 1 (Top) -->
+    <g id="chevron-1" filter="url(#shadow)">
+      <!-- Left side -->
+      <path d="M 500,150 L 390,230 L 390,215 L 500,170 Z" fill="url(#gold-left)"/>
+      <!-- Right side -->
+      <path d="M 500,150 L 610,230 L 610,215 L 500,170 Z" fill="url(#gold-right)"/>
+    </g>
+
+    <!-- Chevron 2 (Middle) -->
+    <g id="chevron-2" filter="url(#shadow)">
+      <!-- Left side -->
+      <path d="M 500,185 L 350,295 L 350,280 L 500,205 Z" fill="url(#gold-left)"/>
+      <!-- Right side -->
+      <path d="M 500,185 L 650,295 L 650,280 L 500,205 Z" fill="url(#gold-right)"/>
+    </g>
+
+    <!-- Chevron 3 (Bottom Curved) -->
+    <g id="chevron-3" filter="url(#shadow)">
+      <!-- Left side -->
+      <path d="M 500,220 Q 380,290 280,370 L 280,352 Q 380,275 500,240 Z" fill="url(#gold-left)"/>
+      <!-- Right side -->
+      <path d="M 500,220 Q 620,290 720,370 L 720,352 Q 620,275 500,240 Z" fill="url(#gold-right)"/>
+    </g>
+
+    <!-- Sweep Baseline -->
+    <path d="M 120,420 Q 320,380 500,380 Q 680,380 880,420 Q 680,385 500,385 Q 320,385 120,420 Z" fill="url(#gold-grad)" filter="url(#shadow)"/>
+  </g>
+
+  <!-- Typography -->
+  <g id="logo-text">
+    <!-- Brand Name -->
+    <text x="500" y="508" class="logo-title" font-size="124" letter-spacing="10" fill="url(#gold-grad)" text-anchor="middle">UPRISE</text>
+    
+    <!-- Subtitle -->
+    <text x="500" y="575" class="logo-subtitle" font-size="28" letter-spacing="4" fill="url(#gold-grad)" text-anchor="middle">EVENT | MEDIA | BRAND | ADVISORY</text>
+  </g>
+</svg>

@@ -1,0 +1,1 @@
+export { applySeo } from "./seo";
