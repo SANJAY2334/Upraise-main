@@ -34,7 +34,7 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(requestTracker);
 
-// Custom structured request logger middleware
+// Structured request logger
 app.use((req, res, next) => {
   const start = Date.now();
   res.on("finish", () => {
@@ -56,7 +56,8 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        // Removed 'unsafe-inline' — use nonces or hashes for inline scripts if required
+        scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://res.cloudinary.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -118,11 +119,14 @@ app.get("/readyz", async (req, res, next) => {
     return next(error);
   }
 });
+
 app.get("/robots.txt", (_req, res) => {
-  res.type("text/plain").send(`User-agent: *\nAllow: /\nSitemap: ${config.siteUrl}/sitemap.xml\n`);
+  res.type("text/plain").send(`User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: ${config.siteUrl}/sitemap.xml\n`);
 });
+
+// Public sitemap — /admin intentionally excluded to avoid exposing admin URL
 app.get("/sitemap.xml", (_req, res) => {
-  const urls = ["", "/privacy", "/cookie-policy", "/terms", "/admin"];
+  const urls = ["", "/privacy", "/cookie-policy", "/terms"];
   res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((url) => `  <url><loc>${config.siteUrl}${url}</loc><changefreq>weekly</changefreq><priority>${url === "" ? "1.0" : "0.7"}</priority></url>`).join("\n")}

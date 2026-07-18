@@ -10,7 +10,7 @@ type CaseStudyType = {
   narrative?: string;
   challenge?: string;
   results?: string[];
-  metrics?: any;
+  metrics?: Record<string, string>;
   image?: string;
 };
 

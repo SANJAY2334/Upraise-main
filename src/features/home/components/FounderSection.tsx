@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, Skeleton } from "../../../shared/components";
+import type { ApiFounder } from "../../../shared/services/api";
 
 const reveal = {
   hidden: { opacity: 0, y: 28 },
@@ -9,7 +10,7 @@ const reveal = {
 };
 
 type Props = {
-  content: any;
+  content: { founder: ApiFounder | null } | undefined;
   contentLoading: boolean;
   founderTimeline: Array<{ year: string; title: string; detail: string }>;
   founderHighlights: string[];

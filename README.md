@@ -115,7 +115,7 @@ uprise-platform/
 
 ## Environment Variables
 
-See [`.env.production`](.env.production) for the complete template.
+See [`.env.production.example`](.env.production.example) for the complete template.
 
 All required secrets are validated at startup — the server will exit with an error if any required production variable is missing or uses a default insecure value.
 

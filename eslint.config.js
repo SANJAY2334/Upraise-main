@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import globals from "globals";
 import ts from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import react from "eslint-plugin-react";
@@ -9,6 +10,20 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 
 export default [
   js.configs.recommended,
+
+  // Node.js/CommonJS configuration for load tests
+  {
+    files: ["tests/load/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node
+      }
+    }
+  },
+
+  // TypeScript / React configuration
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
@@ -43,7 +58,7 @@ export default [
     },
     plugins: {
       "@typescript-eslint": ts,
-      react: react,
+      react,
       "react-hooks": reactHooks,
       import: importPlugin,
       "unused-imports": unusedImports,
@@ -59,29 +74,44 @@ export default [
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.configs.recommended.rules,
+
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "no-undef": "off",
+
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-namespace": "off",
+
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
-        { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_"
+        }
       ],
+
       "react-hooks/set-state-in-effect": "off",
+
       "import/order": [
         "error",
         {
           groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
           "newlines-between": "ignore",
-          alphabetize: { order: "asc", caseInsensitive: true }
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true
+          }
         }
       ],
+
       "import/no-unresolved": "off"
     }
   },
+
   {
     ignores: [
       "node_modules/",

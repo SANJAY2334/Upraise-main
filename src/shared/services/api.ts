@@ -10,9 +10,15 @@ export type ContactPayload = {
   consent: boolean;
 };
 
+async function getCsrfToken() {
+  const res = await fetch("/api/csrf", { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to load CSRF token.");
+  const json = (await res.json()) as { success: boolean; data: { csrfToken: string } };
+  return json.data.csrfToken;
+}
+
 export async function submitContact(payload: ContactPayload) {
-  const csrfResponse = await fetch("/api/csrf", { credentials: "include" });
-  const { csrfToken } = (await csrfResponse.json()) as { csrfToken: string };
+  const csrfToken = await getCsrfToken();
 
   const response = await fetch("/api/contact", {
     method: "POST",
@@ -59,9 +65,7 @@ async function adminGet<T>(path: string): Promise<T> {
 }
 
 async function adminPost<T>(path: string, body: unknown): Promise<T> {
-  const csrfRes = await fetch("/api/csrf", { credentials: "include" });
-  const csrfJson = (await csrfRes.json()) as { success: boolean; data: { csrfToken: string } };
-  const csrfToken = csrfJson.data.csrfToken;
+  const csrfToken = await getCsrfToken();
   const res = await authFetch(path, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -76,9 +80,7 @@ async function adminPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function adminPatch<T>(path: string, body: unknown): Promise<T> {
-  const csrfRes = await fetch("/api/csrf", { credentials: "include" });
-  const csrfJson = (await csrfRes.json()) as { success: boolean; data: { csrfToken: string } };
-  const csrfToken = csrfJson.data.csrfToken;
+  const csrfToken = await getCsrfToken();
   const res = await authFetch(path, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -93,9 +95,7 @@ async function adminPatch<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function adminDelete(path: string): Promise<void> {
-  const csrfRes = await fetch("/api/csrf", { credentials: "include" });
-  const csrfJson = (await csrfRes.json()) as { success: boolean; data: { csrfToken: string } };
-  const csrfToken = csrfJson.data.csrfToken;
+  const csrfToken = await getCsrfToken();
   const res = await authFetch(path, {
     method: "DELETE",
     headers: { "x-csrf-token": csrfToken }
@@ -284,8 +284,7 @@ export const api = {
     return adminGet<PaginatedResponse<ApiMediaAsset>>(`/api/admin/media?${q}`);
   },
   uploadMedia: async (file: File, alt?: string): Promise<ApiMediaAsset> => {
-    const csrfRes = await fetch("/api/csrf", { credentials: "include" });
-    const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
+    const csrfToken = await getCsrfToken();
     const fd = new FormData();
     fd.append("asset", file);
     if (alt) fd.append("alt", alt);

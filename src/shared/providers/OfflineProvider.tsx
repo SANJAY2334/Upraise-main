@@ -14,17 +14,24 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [notificationType, setNotificationType] = useState<"offline" | "online" | null>(null);
 
   useEffect(() => {
+    let onlineTimer: NodeJS.Timeout | number | undefined;
+
     const handleOnline = () => {
       setIsOffline(false);
       setNotificationType("online");
       setShowStatusNotification(true);
-      const timer = setTimeout(() => {
+      if (onlineTimer) {
+        clearTimeout(onlineTimer as number);
+      }
+      onlineTimer = setTimeout(() => {
         setShowStatusNotification(false);
       }, 4000);
-      return () => clearTimeout(timer);
     };
 
     const handleOffline = () => {
+      if (onlineTimer) {
+        clearTimeout(onlineTimer as number);
+      }
       setIsOffline(true);
       setNotificationType("offline");
       setShowStatusNotification(true);
@@ -34,6 +41,9 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     window.addEventListener("offline", handleOffline);
 
     return () => {
+      if (onlineTimer) {
+        clearTimeout(onlineTimer as number);
+      }
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };

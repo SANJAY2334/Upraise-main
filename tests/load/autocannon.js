@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * UPRISE Load Testing Suite
  * Uses autocannon to benchmark API endpoint throughput and latency.
@@ -11,8 +10,9 @@
  *   - Set TARGET_URL env or pass as arg (default: http://localhost:4000)
  */
 
-const autocannon = require("autocannon");
-const { promisify } = require("util");
+import autocannon from "autocannon";
+import { promisify } from "util";
+
 const run = promisify(autocannon);
 
 const TARGET = process.argv[2] ?? process.env.TARGET_URL ?? "http://localhost:4000";

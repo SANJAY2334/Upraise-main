@@ -67,7 +67,7 @@ git clone https://github.com/your-org/uprise-platform.git
 cd uprise-platform
 
 # 2. Configure environment
-cp .env.production .env.docker
+cp .env.production.example .env.docker
 # Edit .env.docker with real values
 
 # 3. Build and start

@@ -1,46 +1,54 @@
 # ─── BUILD STAGE ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Copy dependency manifests
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install all dependencies (including devDependencies)
+# Install all dependencies (including devDependencies for build)
 RUN npm ci
-
-# Copy source code files
-COPY . .
 
 # Generate Prisma client
 RUN npm run prisma:generate
 
-# Build both client (Vite bundle) and server (TypeScript compile)
+# Copy source files
+COPY . .
+
+# Build both frontend (Vite) and backend (TypeScript)
 RUN npm run build
 
 # ─── RUNNER STAGE ────────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 
-# Set node environment
+# Set production environment
 ENV NODE_ENV=production
 ENV PORT=4000
 
-# Install production dependencies only
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 uprise
+
+# Install production-only dependencies
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Copy generated Prisma Client from builder stage
+# Copy generated Prisma client from builder
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder /app/prisma ./prisma
 
-# Copy built code and configuration
+# Copy compiled backend and frontend assets
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server/dist ./server/dist
 
-# Expose port
+# Set ownership to non-root user
+RUN chown -R uprise:nodejs /app
+USER uprise
+
+# Expose application port
 EXPOSE 4000
 
-# Run migration and start backend server
+# Run migrations then start server
 CMD ["sh", "-c", "npx prisma migrate deploy && node server/dist/index.js"]

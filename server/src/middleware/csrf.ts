@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
+import { config } from "../config.js";
 import { ForbiddenError } from "../shared/errors.js";
 
 const CSRF_COOKIE = "uprise_csrf";
@@ -10,7 +11,7 @@ export function createCsrfToken(req: Request, res: Response) {
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: config.nodeEnv === "production",
     maxAge: 1000 * 60 * 60 * 4
   });
   res.json({
@@ -25,11 +26,19 @@ export function csrfProtection(req: Request, _res: Response, next: NextFunction)
     return next();
   }
 
-  const cookieToken = req.cookies?.[CSRF_COOKIE];
-  const headerToken = req.headers["x-csrf-token"];
+  const cookieToken = req.cookies?.[CSRF_COOKIE] as string | undefined;
+  const headerToken = req.headers["x-csrf-token"] as string | undefined;
 
-  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-    throw new ForbiddenError("CSRF validation failed.");
+  if (!cookieToken || !headerToken) {
+    return next(new ForbiddenError("CSRF validation failed."));
+  }
+
+  // Use timing-safe comparison to prevent timing-based attacks
+  const cookieBuf = Buffer.from(cookieToken);
+  const headerBuf = Buffer.from(headerToken);
+
+  if (cookieBuf.length !== headerBuf.length || !crypto.timingSafeEqual(cookieBuf, headerBuf)) {
+    return next(new ForbiddenError("CSRF validation failed."));
   }
 
   return next();

@@ -153,6 +153,8 @@ model Project {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  @@index([isPublished])
+  @@index([isFeatured])
   @@map("projects")
 }
 
@@ -174,6 +176,8 @@ model CaseStudy {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  @@index([isPublished])
+  @@index([isFeatured])
   @@map("case_studies")
 }
 
@@ -191,6 +195,7 @@ model Client {
   updatedAt     DateTime    @updatedAt
 
   @@index([logoMediaId])
+  @@index([isPublished])
   @@map("clients")
 }
 
@@ -240,6 +245,9 @@ model Blog {
   @@index([categoryId])
   @@index([featuredImageId])
   @@index([seoSettingId])
+  @@index([isPublished])
+  @@index([publishedAt])
+  @@index([isFeatured])
   @@map("blogs")
 }
 
@@ -254,6 +262,7 @@ model Testimonial {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([isPublished])
   @@map("testimonials")
 }
 
@@ -298,6 +307,8 @@ model ContactMessage {
   lead      Lead?
   createdAt DateTime @default(now())
 
+  @@index([email])
+  @@index([createdAt])
   @@map("contact_messages")
 }
 
@@ -317,6 +328,8 @@ model Lead {
   updatedAt        DateTime        @updatedAt
 
   @@index([status])
+  @@index([email])
+  @@index([createdAt])
   @@map("leads")
 }
 
@@ -347,6 +360,7 @@ model SiteSetting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([group])
   @@map("site_settings")
 }
 

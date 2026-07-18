@@ -1,21 +1,51 @@
 import assert from "node:assert";
 import type { Server } from "node:http";
 import { after, before, describe, it } from "node:test";
+import bcrypt from "bcryptjs";
+import { prisma } from "../prisma.js";
 import { app } from "../server.js";
 
 describe("Integration Test Suite", () => {
   let server: Server;
   let baseUrl: string;
 
-  before((_ctx, done) => {
-    server = app.listen(0, () => {
-      const address = server.address();
-      if (address && typeof address === "object") {
-        baseUrl = `http://localhost:${address.port}`;
-        done();
-      } else {
-        done(new Error("Failed to retrieve server address."));
-      }
+  before(async () => {
+    // Ensure test user exists in real DB if it's configured
+    try {
+      const adminRole = await prisma.role.upsert({
+        where: { name: "ADMIN" },
+        update: {},
+        create: {
+          name: "ADMIN",
+          description: "Full platform access",
+          permissions: ["*"]
+        }
+      });
+      const passwordHash = await bcrypt.hash("password123", 10);
+      await prisma.user.upsert({
+        where: { email: "admin@uprise.com" },
+        update: { passwordHash },
+        create: {
+          name: "Test Administrator",
+          email: "admin@uprise.com",
+          passwordHash,
+          roleId: adminRole.id
+        }
+      });
+    } catch (_err) {
+      // Ignore if using mock prisma or DB is not migrated yet
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      server = app.listen(0, () => {
+        const address = server.address();
+        if (address && typeof address === "object") {
+          baseUrl = `http://localhost:${address.port}`;
+          resolve();
+        } else {
+          reject(new Error("Failed to retrieve server address."));
+        }
+      });
     });
   });
 

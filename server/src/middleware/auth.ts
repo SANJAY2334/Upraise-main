@@ -18,11 +18,11 @@ declare global {
 }
 
 export function signAccessToken(user: AuthUser) {
-  return jwt.sign(user, config.jwtAccessSecret, { expiresIn: "15m" });
+  return jwt.sign(user, config.jwtAccessSecret, { expiresIn: "15m", algorithm: "HS256" });
 }
 
 export function signRefreshToken(user: AuthUser) {
-  return jwt.sign(user, config.jwtRefreshSecret, { expiresIn: "7d" });
+  return jwt.sign(user, config.jwtRefreshSecret, { expiresIn: "7d", algorithm: "HS256" });
 }
 
 export function requireAuth(req: Request, _res: Response, next: NextFunction) {
@@ -30,21 +30,23 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
 
   if (!token) {
-    throw new UnauthorizedError("Authentication required.");
+    return next(new UnauthorizedError("Authentication required."));
   }
 
   try {
-    req.user = jwt.verify(token, config.jwtAccessSecret) as AuthUser;
+    req.user = jwt.verify(token, config.jwtAccessSecret, {
+      algorithms: ["HS256"]
+    }) as AuthUser;
     return next();
   } catch (_err) {
-    throw new UnauthorizedError("Invalid or expired token.");
+    return next(new UnauthorizedError("Invalid or expired token."));
   }
 }
 
 export function requireRole(roles: string[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      throw new ForbiddenError("Insufficient permissions.");
+      return next(new ForbiddenError("Insufficient permissions."));
     }
     return next();
   };

@@ -27,8 +27,8 @@ type Props = {
     isPending: boolean;
     isSuccess: boolean;
     isError: boolean;
-    error: any;
-    data: any;
+    error: { message: string } | null;
+    data: { status: string } | undefined;
   };
 };
 
@@ -120,12 +120,12 @@ export default function ContactSection({ services, mutation }: Props) {
 
           {mutation.isSuccess && (
             <p className="text-sm font-semibold text-gold" role="status">
-              Inquiry captured. Lead status: {mutation.data.status}.
+              Inquiry captured. Lead status: {mutation.data?.status}.
             </p>
           )}
           {mutation.isError && (
             <p className="text-sm font-semibold text-red-400" role="alert">
-              {mutation.error.message}
+              {mutation.error?.message}
             </p>
           )}
         </Form>
