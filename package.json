@@ -22,7 +22,7 @@
     "test": "node --import tsx --test \"server/src/tests/**/*.test.ts\"",
     "test:e2e": "playwright test",
     "test:load": "node tests/load/autocannon.js",
-    "prepare": "husky"
+    "prepare": "command -v husky >/dev/null 2>&1 && husky"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
