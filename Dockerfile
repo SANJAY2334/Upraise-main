@@ -1,33 +1,32 @@
-# ───────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────
 # BUILD STAGE
-# ───────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────
 FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Disable Husky during Docker builds
 ENV HUSKY=0
 
 # Copy dependency manifests
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies (including devDependencies)
+# Install dependencies
 RUN npm ci
+
+# Copy project
+COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Copy application source
-COPY . .
-
-# Build application
+# Build frontend + backend
 RUN npm run build
 
 
-# ───────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────
 # RUNTIME STAGE
-# ───────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────
 FROM node:24-alpine
 
 WORKDIR /app
@@ -40,26 +39,25 @@ ENV HUSKY=0
 RUN addgroup -S nodejs && \
     adduser -S uprise -G nodejs
 
-# Copy package.json (useful for npm/npx metadata)
+# Copy package metadata
 COPY package*.json ./
 
-# Copy production-ready node_modules from builder
+# Copy installed dependencies
 COPY --from=builder /app/node_modules ./node_modules
 
-# Copy Prisma schema
+# Copy Prisma schema & migrations
 COPY --from=builder /app/prisma ./prisma
 
-# Copy compiled backend
-COPY --from=builder /app/server/dist ./server/dist
+# ✅ Backend output
+COPY --from=builder /app/dist/server ./dist/server
 
-# Copy frontend build
+# ✅ Frontend output
 COPY --from=builder /app/dist ./dist
 
-# Change ownership
 RUN chown -R uprise:nodejs /app
 
 USER uprise
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node server/dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server/index.js"]
