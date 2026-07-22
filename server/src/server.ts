@@ -116,7 +116,7 @@ app.get("/readyz", async (req, res) => {
       requestId: req.id
     });
   } catch (error) {
-    req.log.warn({ error }, "Database connection failed during readiness check");
+    logger.warn({ error, requestId: req.id }, "Database connection failed during readiness check");
     return res.status(500).json({
       success: false,
       error: {
