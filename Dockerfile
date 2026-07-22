@@ -1,6 +1,6 @@
-# ───────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
 # BUILD STAGE
-# ───────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
 FROM node:24-alpine AS builder
 
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY prisma ./prisma/
 # Install dependencies
 RUN npm ci
 
-# Copy project
+# Copy application source
 COPY . .
 
 # Generate Prisma Client
@@ -24,9 +24,9 @@ RUN npx prisma generate
 RUN npm run build
 
 
-# ───────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
 # RUNTIME STAGE
-# ───────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────
 FROM node:24-alpine
 
 WORKDIR /app
@@ -48,10 +48,10 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copy Prisma schema & migrations
 COPY --from=builder /app/prisma ./prisma
 
-# ✅ Backend output
+# Copy backend build output
 COPY --from=builder /app/dist/server ./dist/server
 
-# ✅ Frontend output
+# Copy frontend build output
 COPY --from=builder /app/dist ./dist
 
 RUN chown -R uprise:nodejs /app
