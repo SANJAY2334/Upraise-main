@@ -5,66 +5,61 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
+# Disable Husky during Docker builds
+ENV HUSKY=0
+
 # Copy dependency manifests
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Disable Husky during Docker builds
-ENV HUSKY=0
-
-# Install all dependencies (including devDependencies)
+# Install dependencies (including devDependencies)
 RUN npm ci
 
 # Generate Prisma Client
-RUN npm run prisma:generate
+RUN npx prisma generate
 
-# Copy project source
+# Copy application source
 COPY . .
 
-# Build frontend and backend
+# Build application
 RUN npm run build
 
 
 # ───────────────────────────────────────────────────────────────────────────────
 # RUNTIME STAGE
 # ───────────────────────────────────────────────────────────────────────────────
-FROM node:24-alpine AS runner
+FROM node:24-alpine
 
 WORKDIR /app
 
-# Production environment
 ENV NODE_ENV=production
 ENV PORT=4000
 ENV HUSKY=0
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 uprise
+RUN addgroup -S nodejs && \
+    adduser -S uprise -G nodejs
 
-# Copy package manifests
+# Copy package.json (useful for npm/npx metadata)
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Copy production-ready node_modules from builder
+COPY --from=builder /app/node_modules ./node_modules
 
-# Copy Prisma Client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
-
-# Copy Prisma schema & migrations
+# Copy Prisma schema
 COPY --from=builder /app/prisma ./prisma
 
-# Copy compiled application
-COPY --from=builder /app/dist ./dist
+# Copy compiled backend
 COPY --from=builder /app/server/dist ./server/dist
 
-# Set permissions
+# Copy frontend build
+COPY --from=builder /app/dist ./dist
+
+# Change ownership
 RUN chown -R uprise:nodejs /app
 
 USER uprise
 
-# Expose application port
 EXPOSE 4000
 
-# Run database migrations and start application
 CMD ["sh", "-c", "npx prisma migrate deploy && node server/dist/index.js"]
