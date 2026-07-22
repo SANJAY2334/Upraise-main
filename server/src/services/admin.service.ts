@@ -1,4 +1,5 @@
-import type { IAdminRepository } from "../repositories/admin.repository.js";
+import type { Lead, Service, Project, MediaAsset, Prisma, LeadStatus } from "@prisma/client";
+import type { IAdminRepository, ContactMessageWithLead } from "../repositories/admin.repository.js";
 import type {
   DashboardResponseDTO,
   LeadDTO,
@@ -58,7 +59,7 @@ export class AdminService {
   }
 
   async updateLeadStatus(params: { id: string; status: string; userId?: string | undefined }): Promise<LeadDTO> {
-    const lead = await this.adminRepo.updateLeadStatus(params.id, params.status);
+    const lead = await this.adminRepo.updateLeadStatus(params.id, params.status as LeadStatus);
 
     await this.auditLog({
       userId: params.userId,
@@ -121,7 +122,7 @@ export class AdminService {
     };
   }
 
-  async createService(params: { data: any; userId?: string | undefined }): Promise<ServiceDTO> {
+  async createService(params: { data: Prisma.ServiceCreateInput; userId?: string | undefined }): Promise<ServiceDTO> {
     const service = await this.adminRepo.createService(params.data);
 
     await this.auditLog({
@@ -134,7 +135,11 @@ export class AdminService {
     return this.toServiceDTO(service);
   }
 
-  async updateService(params: { id: string; data: any; userId?: string | undefined }): Promise<ServiceDTO> {
+  async updateService(params: {
+    id: string;
+    data: Prisma.ServiceUpdateInput;
+    userId?: string | undefined;
+  }): Promise<ServiceDTO> {
     const service = await this.adminRepo.updateService(params.id, params.data);
 
     await this.auditLog({
@@ -176,7 +181,7 @@ export class AdminService {
     };
   }
 
-  async createProject(params: { data: any; userId?: string | undefined }): Promise<ProjectDTO> {
+  async createProject(params: { data: Prisma.ProjectCreateInput; userId?: string | undefined }): Promise<ProjectDTO> {
     const project = await this.adminRepo.createProject(params.data);
 
     await this.auditLog({
@@ -189,7 +194,11 @@ export class AdminService {
     return this.toProjectDTO(project);
   }
 
-  async updateProject(params: { id: string; data: any; userId?: string | undefined }): Promise<ProjectDTO> {
+  async updateProject(params: {
+    id: string;
+    data: Prisma.ProjectUpdateInput;
+    userId?: string | undefined;
+  }): Promise<ProjectDTO> {
     const project = await this.adminRepo.updateProject(params.id, params.data);
 
     await this.auditLog({
@@ -243,7 +252,7 @@ export class AdminService {
   }
 
   // Mappers
-  private toLeadDTO(lead: any): LeadDTO {
+  private toLeadDTO(lead: Lead): LeadDTO {
     return {
       id: lead.id,
       name: lead.name,
@@ -259,7 +268,7 @@ export class AdminService {
     };
   }
 
-  private toContactMessageDTO(msg: any): ContactMessageDTO {
+  private toContactMessageDTO(msg: ContactMessageWithLead): ContactMessageDTO {
     return {
       id: msg.id,
       name: msg.name,
@@ -280,7 +289,7 @@ export class AdminService {
     };
   }
 
-  private toServiceDTO(s: any): ServiceDTO {
+  private toServiceDTO(s: Service): ServiceDTO {
     return {
       id: s.id,
       title: s.title,
@@ -294,7 +303,7 @@ export class AdminService {
     };
   }
 
-  private toProjectDTO(p: any): ProjectDTO {
+  private toProjectDTO(p: Project): ProjectDTO {
     return {
       id: p.id,
       title: p.title,
@@ -310,7 +319,7 @@ export class AdminService {
     };
   }
 
-  private toMediaAssetDTO(m: any): MediaAssetDTO {
+  private toMediaAssetDTO(m: MediaAsset): MediaAssetDTO {
     return {
       id: m.id,
       publicId: m.publicId,

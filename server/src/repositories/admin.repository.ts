@@ -1,4 +1,5 @@
-import type { Lead, Project, MediaAsset, Service, ContactMessage } from "@prisma/client";
+import type { Lead, Project, MediaAsset, Service, ContactMessage, LeadStatus } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
 
 export type ContactMessageWithLead = ContactMessage & {
@@ -17,7 +18,7 @@ export interface IAdminRepository {
   // Leads
   findLeads(params: { status?: string | undefined; skip: number; take: number }): Promise<Lead[]>;
   countLeadsFiltered(params: { status?: string | undefined }): Promise<number>;
-  updateLeadStatus(id: string, status: any): Promise<Lead>;
+  updateLeadStatus(id: string, status: LeadStatus): Promise<Lead>;
 
   // Contact Messages
   findContactMessages(params: {
@@ -31,15 +32,15 @@ export interface IAdminRepository {
   // Services
   findServices(params: { search?: string | undefined; skip: number; take: number }): Promise<Service[]>;
   countServicesFiltered(params: { search?: string | undefined }): Promise<number>;
-  createService(data: any): Promise<Service>;
-  updateService(id: string, data: any): Promise<Service>;
+  createService(data: Prisma.ServiceCreateInput): Promise<Service>;
+  updateService(id: string, data: Prisma.ServiceUpdateInput): Promise<Service>;
   deleteService(id: string): Promise<void>;
 
   // Projects
   findProjects(params: { search?: string | undefined; skip: number; take: number }): Promise<Project[]>;
   countProjectsFiltered(params: { search?: string | undefined }): Promise<number>;
-  createProject(data: any): Promise<Project>;
-  updateProject(id: string, data: any): Promise<Project>;
+  createProject(data: Prisma.ProjectCreateInput): Promise<Project>;
+  updateProject(id: string, data: Prisma.ProjectUpdateInput): Promise<Project>;
   deleteProject(id: string): Promise<void>;
 
   // Media Assets
@@ -78,7 +79,7 @@ export class AdminRepository implements IAdminRepository {
 
   // Leads
   async findLeads(params: { status?: string | undefined; skip: number; take: number }): Promise<Lead[]> {
-    const where = params.status ? { status: params.status as any } : {};
+    const where = params.status ? { status: params.status as LeadStatus } : {};
     return this.prismaClient.lead.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -88,11 +89,11 @@ export class AdminRepository implements IAdminRepository {
   }
 
   async countLeadsFiltered(params: { status?: string | undefined }): Promise<number> {
-    const where = params.status ? { status: params.status as any } : {};
+    const where = params.status ? { status: params.status as LeadStatus } : {};
     return this.prismaClient.lead.count({ where });
   }
 
-  async updateLeadStatus(id: string, status: any): Promise<Lead> {
+  async updateLeadStatus(id: string, status: LeadStatus): Promise<Lead> {
     return this.prismaClient.lead.update({
       where: { id },
       data: { status }
@@ -157,11 +158,11 @@ export class AdminRepository implements IAdminRepository {
     return this.prismaClient.service.count({ where });
   }
 
-  async createService(data: any): Promise<Service> {
+  async createService(data: Prisma.ServiceCreateInput): Promise<Service> {
     return this.prismaClient.service.create({ data });
   }
 
-  async updateService(id: string, data: any): Promise<Service> {
+  async updateService(id: string, data: Prisma.ServiceUpdateInput): Promise<Service> {
     return this.prismaClient.service.update({
       where: { id },
       data
@@ -190,11 +191,11 @@ export class AdminRepository implements IAdminRepository {
     return this.prismaClient.project.count({ where });
   }
 
-  async createProject(data: any): Promise<Project> {
+  async createProject(data: Prisma.ProjectCreateInput): Promise<Project> {
     return this.prismaClient.project.create({ data });
   }
 
-  async updateProject(id: string, data: any): Promise<Project> {
+  async updateProject(id: string, data: Prisma.ProjectUpdateInput): Promise<Project> {
     return this.prismaClient.project.update({
       where: { id },
       data

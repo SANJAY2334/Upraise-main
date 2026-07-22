@@ -32,7 +32,7 @@ describe("Integration Test Suite", () => {
           roleId: adminRole.id
         }
       });
-    } catch (_err) {
+    } catch {
       // Ignore if using mock prisma or DB is not migrated yet
     }
 

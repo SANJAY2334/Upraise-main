@@ -36,7 +36,7 @@ export class ContentService {
         strategy: c.strategy,
         execution: c.execution,
         results: c.results,
-        metrics: c.metrics,
+        metrics: c.metrics as Record<string, string> | null,
         isFeatured: c.isFeatured,
         isPublished: c.isPublished
       })),

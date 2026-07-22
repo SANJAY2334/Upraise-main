@@ -3,7 +3,7 @@ export class AppError extends Error {
     public override message: string,
     public statusCode: number = 500,
     public code: string = "INTERNAL_SERVER_ERROR",
-    public details: any = null
+    public details: unknown = null
   ) {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype);
@@ -11,7 +11,7 @@ export class AppError extends Error {
 }
 
 export class BadRequestError extends AppError {
-  constructor(message: string, details: any = null) {
+  constructor(message: string, details: unknown = null) {
     super(message, 400, "BAD_REQUEST", details);
   }
 }
@@ -35,7 +35,7 @@ export class NotFoundError extends AppError {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string, details: any = null) {
+  constructor(message: string, details: unknown = null) {
     super(message, 422, "VALIDATION_ERROR", details);
   }
 }

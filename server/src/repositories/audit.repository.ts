@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../prisma.js";
 
 export type AuditLogInput = {
@@ -23,7 +24,7 @@ export class AuditRepository implements IAuditRepository {
         action: input.action,
         entity: input.entity,
         entityId: input.entityId ?? null,
-        metadata: (input.metadata ?? null) as any
+        metadata: (input.metadata ?? null) as Prisma.InputJsonValue
       }
     });
   }

@@ -126,7 +126,14 @@ describe("AdminService Unit Tests", () => {
       capturedAuditLog = log;
     });
 
-    const svc = await service.createService({ data: { title: "New Design Svc" }, userId: "admin-1" });
+    const svc = await service.createService({
+      data: {
+        title: "New Design Svc",
+        slug: "new-design-svc",
+        description: "Design services description"
+      },
+      userId: "admin-1"
+    });
     assert.strictEqual(svc.title, "New Design Svc");
     assert.ok(capturedAuditLog);
     assert.strictEqual(capturedAuditLog.action, "SERVICE_CREATED");

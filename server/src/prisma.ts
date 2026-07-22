@@ -18,8 +18,8 @@ if (config.nodeEnv !== "production") {
 const DEMO_PASSWORD_HASH = bcrypt.hashSync("password123", 10);
 
 function createPrismaMock() {
-  const handler = {
-    get(_target: any, prop: string): any {
+  const handler: ProxyHandler<object> = {
+    get(_target, prop: string) {
       if (prop === "$queryRaw") {
         return async () => [1];
       }
@@ -31,7 +31,7 @@ function createPrismaMock() {
         {},
         {
           get(_, method: string) {
-            return async (...args: any[]) => {
+            return async (...args: unknown[]) => {
               if (method === "findUnique" || method === "findFirst") {
                 if (prop === "user") {
                   return {
@@ -51,7 +51,8 @@ function createPrismaMock() {
                 return 0;
               }
               if (method === "create" || method === "update") {
-                const data = args[0]?.data || {};
+                const arg = args[0] as { data?: Record<string, unknown> } | undefined;
+                const data = arg?.data || {};
                 return { id: `mock-${Date.now()}`, ...data };
               }
               if (method === "delete") {
@@ -64,7 +65,7 @@ function createPrismaMock() {
       );
     }
   };
-  return new Proxy({}, handler) as any;
+  return new Proxy({}, handler) as unknown as PrismaClient;
 }
 
 // In production, we require the database URL to be configured.

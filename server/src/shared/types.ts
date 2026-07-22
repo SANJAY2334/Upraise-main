@@ -40,7 +40,7 @@ export interface CaseStudyDTO {
   strategy: string;
   execution: string;
   results: string[];
-  metrics: any;
+  metrics: Record<string, string> | null;
   isFeatured: boolean;
   isPublished: boolean;
 }

@@ -102,7 +102,11 @@ describe("AdminRepository Unit Tests", () => {
     const repo = new AdminRepository(mockPrisma as any);
 
     // Create
-    const svc = await repo.createService({ title: "Cloud Integration" });
+    const svc = await repo.createService({
+      title: "Cloud Integration",
+      slug: "cloud-integration",
+      description: "Cloud integration services"
+    });
     assert.strictEqual(svc.id, "svc-1");
     assert.strictEqual(capturedCreateData.title, "Cloud Integration");
 

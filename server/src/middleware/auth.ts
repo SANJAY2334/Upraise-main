@@ -38,7 +38,7 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
       algorithms: ["HS256"]
     }) as AuthUser;
     return next();
-  } catch (_err) {
+  } catch {
     return next(new UnauthorizedError("Invalid or expired token."));
   }
 }
