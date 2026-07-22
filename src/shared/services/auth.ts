@@ -1,6 +1,17 @@
 const TOKEN_KEY = "uprise_access_token";
 const REFRESH_KEY = "uprise_refresh_token";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
+export function getApiUrl(path: string): string {
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  const base = API_BASE.replace(/\/$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
+}
+
 export type AuthUser = { id: string; email: string; role: string };
 
 export function getAccessToken() {
@@ -27,7 +38,7 @@ export async function apiLogout(): Promise<void> {
   clearTokens();
 
   try {
-    await fetch("/api/auth/logout", {
+    await fetch(getApiUrl("/api/auth/logout"), {
       method: "POST",
       credentials: "include",
       headers: {
@@ -42,7 +53,7 @@ export async function apiLogout(): Promise<void> {
 }
 
 async function getCsrf() {
-  const r = await fetch("/api/csrf", { credentials: "include" });
+  const r = await fetch(getApiUrl("/api/csrf"), { credentials: "include" });
   const json = (await r.json()) as { success: boolean; data: { csrfToken: string } };
   return json.data.csrfToken;
 }
@@ -52,7 +63,7 @@ export async function apiLogin(
   password: string
 ): Promise<{ accessToken: string; refreshToken: string; user: AuthUser }> {
   const csrfToken = await getCsrf();
-  const res = await fetch("/api/auth/login", {
+  const res = await fetch(getApiUrl("/api/auth/login"), {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -70,7 +81,7 @@ export async function apiLogin(
 }
 
 export async function apiMe(token: string): Promise<AuthUser> {
-  const res = await fetch("/api/auth/me", {
+  const res = await fetch(getApiUrl("/api/auth/me"), {
     credentials: "include",
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -84,7 +95,7 @@ export async function apiRefresh(): Promise<string | null> {
   if (!refreshToken) return null;
   try {
     const csrfToken = await getCsrf();
-    const res = await fetch("/api/auth/refresh", {
+    const res = await fetch(getApiUrl("/api/auth/refresh"), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -106,12 +117,12 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
   const headers = new Headers(init.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  let res = await fetch(input, { ...init, headers, credentials: "include" });
+  let res = await fetch(getApiUrl(input), { ...init, headers, credentials: "include" });
   if (res.status === 401) {
     token = await apiRefresh();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
-      res = await fetch(input, { ...init, headers, credentials: "include" });
+      res = await fetch(getApiUrl(input), { ...init, headers, credentials: "include" });
     }
   }
   return res;

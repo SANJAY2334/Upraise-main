@@ -1,4 +1,4 @@
-import { authFetch } from "./auth";
+import { authFetch, getApiUrl } from "./auth";
 
 export type ContactPayload = {
   name: string;
@@ -11,7 +11,7 @@ export type ContactPayload = {
 };
 
 async function getCsrfToken() {
-  const res = await fetch("/api/csrf", { credentials: "include" });
+  const res = await fetch(getApiUrl("/api/csrf"), { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load CSRF token.");
   const json = (await res.json()) as { success: boolean; data: { csrfToken: string } };
   return json.data.csrfToken;
@@ -20,7 +20,7 @@ async function getCsrfToken() {
 export async function submitContact(payload: ContactPayload) {
   const csrfToken = await getCsrfToken();
 
-  const response = await fetch("/api/contact", {
+  const response = await fetch(getApiUrl("/api/contact"), {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
@@ -37,7 +37,7 @@ export async function submitContact(payload: ContactPayload) {
 
 // ─── Public Content ──────────────────────────────────────────────────────────
 export async function fetchPublicContent() {
-  const res = await fetch("/api/content/public");
+  const res = await fetch(getApiUrl("/api/content/public"));
   if (!res.ok) throw new Error("Failed to load content.");
   const json = (await res.json()) as {
     success: boolean;

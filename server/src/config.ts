@@ -9,8 +9,26 @@ const envSchema = z.object({
     .string()
     .transform((v) => Number(v))
     .default("4000"),
-  CLIENT_URL: z.string().url().default("http://localhost:5173"),
-  SITE_URL: z.string().url().default("https://uprise.example.com"),
+  CLIENT_URL: z
+    .string()
+    .transform((v) => {
+      if (!v.startsWith("http://") && !v.startsWith("https://")) {
+        return `https://${v}`;
+      }
+      return v;
+    })
+    .pipe(z.string().url())
+    .default("http://localhost:5173"),
+  SITE_URL: z
+    .string()
+    .transform((v) => {
+      if (!v.startsWith("http://") && !v.startsWith("https://")) {
+        return `https://${v}`;
+      }
+      return v;
+    })
+    .pipe(z.string().url())
+    .default("https://uprise.example.com"),
   JWT_ACCESS_SECRET: z.string().default("dev-access-secret-change-me"),
   JWT_REFRESH_SECRET: z.string().default("dev-refresh-secret-change-me"),
   DATABASE_URL: z.string().optional(),
