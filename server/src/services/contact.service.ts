@@ -3,12 +3,15 @@ import type { ContactResponseDTO } from "../shared/types.js";
 import { writeAuditLog } from "./audit.js";
 
 export class ContactService {
-  constructor(private contactRepo: IContactRepository) {}
+  constructor(
+    private contactRepo: IContactRepository,
+    private auditLog = writeAuditLog
+  ) {}
 
   async submitContact(data: CreateContactInput): Promise<ContactResponseDTO> {
     const message = await this.contactRepo.createContact(data);
 
-    await writeAuditLog({
+    await this.auditLog({
       action: "CONTACT_SUBMITTED",
       entity: "contact_messages",
       entityId: message.id,

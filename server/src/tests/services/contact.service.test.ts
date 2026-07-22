@@ -40,7 +40,7 @@ class MockContactRepository implements IContactRepository {
 describe("ContactService Unit Tests", () => {
   it("should process contact submission and return serialized DTO", async () => {
     const mockRepo = new MockContactRepository();
-    const service = new ContactService(mockRepo);
+    const service = new ContactService(mockRepo, async () => {});
 
     const result = await service.submitContact({
       name: "Alice",

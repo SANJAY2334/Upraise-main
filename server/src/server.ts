@@ -107,16 +107,26 @@ app.get("/healthz", (req, res) => {
   });
 });
 
-app.get("/readyz", async (req, res, next) => {
+app.get("/readyz", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    return res.json({
+    return res.status(200).json({
       success: true,
       data: { status: "READY", database: "UP", timestamp: new Date().toISOString() },
       requestId: req.id
     });
   } catch (error) {
-    return next(error);
+    req.log.warn({ error }, "Database connection failed during readiness check");
+    return res.status(500).json({
+      success: false,
+      error: {
+        statusCode: 500,
+        code: "DATABASE_UNAVAILABLE",
+        message: "Database server is currently unreachable.",
+        details: null
+      },
+      requestId: req.id
+    });
   }
 });
 
