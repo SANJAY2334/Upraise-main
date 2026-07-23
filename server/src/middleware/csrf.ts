@@ -9,11 +9,11 @@ const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 export function createCsrfToken(req: Request, res: Response) {
   const token = crypto.randomBytes(32).toString("hex");
   res.cookie(CSRF_COOKIE, token, {
-    httpOnly: false,
-    sameSite: "lax",
-    secure: config.nodeEnv === "production",
-    maxAge: 1000 * 60 * 60 * 4
-  });
+  httpOnly: false,
+  sameSite: config.nodeEnv === "production" ? "none" : "lax",
+  secure: config.nodeEnv === "production",
+  maxAge: 1000 * 60 * 60 * 4
+});
   res.json({
     success: true,
     data: { csrfToken: token },
