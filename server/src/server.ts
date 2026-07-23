@@ -156,7 +156,9 @@ ${urls.map((url) => `  <url><loc>${config.siteUrl}${url}</loc><changefreq>weekly
 });
 
 app.use("/api/csrf", csrfRouter);
-app.use("/api/docs", docsRouter);
+if (config.nodeEnv !== "production") {
+  app.use("/api/docs", docsRouter);
+}
 app.use("/api", csrfProtection);
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/contact", contactLimiter, contactRouter);

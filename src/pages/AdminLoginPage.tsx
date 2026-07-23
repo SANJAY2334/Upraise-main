@@ -70,8 +70,6 @@ export default function AdminLoginPage() {
           >
             Sign In
           </Button>
-
-          <p className="mt-5 text-center text-xs text-muted">Demo credentials: admin@uprise.example / ChangeMe123!</p>
         </Form>
       </motion.div>
     </main>

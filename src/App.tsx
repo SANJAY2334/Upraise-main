@@ -9,6 +9,7 @@ import { AuthProvider, useAuth, OfflineProvider } from "./shared/providers";
 const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { state } = useAuth();
@@ -65,6 +66,7 @@ export default function App() {
                   <Route path="/privacy" element={<PolicyPage type="privacy" />} />
                   <Route path="/cookie-policy" element={<PolicyPage type="cookies" />} />
                   <Route path="/terms" element={<PolicyPage type="terms" />} />
+                  <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </Suspense>
             </AnimatePresence>
