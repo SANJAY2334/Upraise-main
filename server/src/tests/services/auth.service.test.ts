@@ -55,7 +55,8 @@ describe("AuthService Unit Tests", () => {
         return makeMockSession();
       },
       findActiveSessionsByUserId: async () => [],
-      updateSessionRevokedAt: async () => makeMockSession()
+      updateSessionRevokedAt: async () => makeMockSession(),
+      updateUser: async () => null as any
     };
 
     const dummyAuditLog = async (input: any) => {
@@ -75,7 +76,7 @@ describe("AuthService Unit Tests", () => {
     assert.ok(createdSession.refreshTokenHash);
 
     assert.ok(auditLogged);
-    assert.strictEqual(auditLogged.action, "LOGIN");
+    assert.strictEqual(auditLogged.action, "LOGIN_SUCCESS");
     assert.strictEqual(auditLogged.userId, "user-123");
   });
 
@@ -85,7 +86,8 @@ describe("AuthService Unit Tests", () => {
       findUserById: async () => null,
       createSession: async () => makeMockSession(),
       findActiveSessionsByUserId: async () => [],
-      updateSessionRevokedAt: async () => makeMockSession()
+      updateSessionRevokedAt: async () => makeMockSession(),
+      updateUser: async () => null as any
     };
 
     const service = new AuthService(mockRepo, async () => {});
@@ -102,7 +104,7 @@ describe("AuthService Unit Tests", () => {
   });
 
   it("should refresh access token using valid session", async () => {
-    const authUser = { id: "user-123", email: "jane@example.com", role: "ADMIN" };
+    const authUser = { id: "user-123", email: "jane@example.com", role: "ADMIN", status: "ACTIVE" };
     const refreshToken = signRefreshToken(authUser);
     const refreshTokenHash = bcrypt.hashSync(refreshToken, 4);
 
@@ -126,7 +128,8 @@ describe("AuthService Unit Tests", () => {
         }
         return [];
       },
-      updateSessionRevokedAt: async () => makeMockSession()
+      updateSessionRevokedAt: async () => makeMockSession(),
+      updateUser: async () => null as any
     };
 
     const service = new AuthService(mockRepo, async () => {});
@@ -139,7 +142,7 @@ describe("AuthService Unit Tests", () => {
   });
 
   it("should revoke session on logout", async () => {
-    const authUser = { id: "user-123", email: "jane@example.com", role: "ADMIN" };
+    const authUser = { id: "user-123", email: "jane@example.com", role: "ADMIN", status: "ACTIVE" };
     const refreshToken = signRefreshToken(authUser);
     const refreshTokenHash = bcrypt.hashSync(refreshToken, 4);
 
@@ -168,7 +171,8 @@ describe("AuthService Unit Tests", () => {
       updateSessionRevokedAt: async (sessionId) => {
         updatedSessionId = sessionId;
         return makeMockSession();
-      }
+      },
+      updateUser: async () => null as any
     };
 
     const dummyAuditLog = async (input: any) => {

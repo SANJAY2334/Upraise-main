@@ -12,7 +12,7 @@ export function getApiUrl(path: string): string {
   return `${base}${normalizedPath}`;
 }
 
-export type AuthUser = { id: string; email: string; role: string };
+export type AuthUser = { id: string; email: string; role: string; status: string };
 
 export function getAccessToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -61,7 +61,7 @@ async function getCsrf() {
 export async function apiLogin(
   email: string,
   password: string
-): Promise<{ accessToken: string; refreshToken: string; user: AuthUser }> {
+): Promise<{ accessToken: string; refreshToken: string; user: AuthUser; requirePasswordChange?: boolean }> {
   const csrfToken = await getCsrf();
   const res = await fetch(getApiUrl("/api/auth/login"), {
     method: "POST",
@@ -75,9 +75,22 @@ export async function apiLogin(
   }
   const json = (await res.json()) as {
     success: boolean;
-    data: { accessToken: string; refreshToken: string; user: AuthUser };
+    data: { accessToken: string; refreshToken: string; user: AuthUser; requirePasswordChange?: boolean };
   };
   return json.data;
+}
+
+export async function apiChangePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const csrfToken = await getCsrf();
+  const res = await authFetch("/api/auth/change-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify({ currentPassword, newPassword })
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ message: "Failed to change password." }));
+    throw new Error(body.message ?? "Failed to change password.");
+  }
 }
 
 export async function apiMe(token: string): Promise<AuthUser> {

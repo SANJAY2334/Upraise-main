@@ -40,8 +40,12 @@ export function useAdminLogin() {
     // 2. Perform API call
     setLoading(true);
     try {
-      await login(email, password);
-      navigate("/admin");
+      const res = await login(email, password);
+      if (res?.requirePasswordChange) {
+        navigate("/admin/change-password");
+      } else {
+        navigate("/admin");
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Authentication failed.");
     } finally {

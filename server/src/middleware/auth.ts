@@ -7,6 +7,7 @@ export type AuthUser = {
   id: string;
   email: string;
   role: string;
+  status: string;
 };
 
 declare global {
@@ -37,6 +38,17 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
     req.user = jwt.verify(token, config.jwtAccessSecret, {
       algorithms: ["HS256"]
     }) as AuthUser;
+
+    const url = req.originalUrl || req.url || "";
+    if (
+      req.user.status === "INVITED" &&
+      !url.endsWith("/api/auth/change-password") &&
+      !url.endsWith("/api/auth/me") &&
+      !url.endsWith("/api/auth/logout")
+    ) {
+      return next(new ForbiddenError("Password change required."));
+    }
+
     return next();
   } catch {
     return next(new UnauthorizedError("Invalid or expired token."));
@@ -45,9 +57,13 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 
 export function requireRole(roles: string[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user) {
       return next(new ForbiddenError("Insufficient permissions."));
     }
-    return next();
+    // SUPER_ADMIN has unrestricted access
+    if (req.user.role === "SUPER_ADMIN" || roles.includes(req.user.role)) {
+      return next();
+    }
+    return next(new ForbiddenError("Insufficient permissions."));
   };
 }

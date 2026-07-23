@@ -9,7 +9,10 @@ export class AuthController {
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, password } = req.body;
-      const data = await this.authService.login(email, password);
+      const ip = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || req.ip || "";
+      const userAgent = req.headers["user-agent"] || "";
+
+      const data = await this.authService.login(email, password, ip, userAgent);
 
       const isProd = config.nodeEnv === "production";
       const isSecure = req.secure || req.headers?.["x-forwarded-proto"] === "https" || isProd;
@@ -24,7 +27,11 @@ export class AuthController {
 
       res.json({
         success: true,
-        data,
+        data: {
+          accessToken: data.accessToken,
+          user: data.user,
+          requirePasswordChange: data.requirePasswordChange
+        },
         requestId: req.id
       });
     } catch (error) {
@@ -82,6 +89,26 @@ export class AuthController {
       res.json({
         success: true,
         data: { user: req.user },
+        requestId: req.id
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new BadRequestError("User ID is missing.");
+      }
+
+      await this.authService.changePassword(userId, currentPassword, newPassword);
+
+      res.json({
+        success: true,
+        data: { ok: true },
         requestId: req.id
       });
     } catch (error) {

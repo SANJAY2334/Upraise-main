@@ -35,7 +35,10 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
-  SENTRY_DSN: z.string().optional()
+  SENTRY_DSN: z.string().optional(),
+  SUPER_ADMIN_EMAIL: z.string().email().optional(),
+  SUPER_ADMIN_USERNAME: z.string().optional(),
+  SUPER_ADMIN_PASSWORD: z.string().optional()
 });
 
 const result = envSchema.safeParse(process.env);
@@ -81,5 +84,10 @@ export const config = {
     apiKey: parsedEnv.CLOUDINARY_API_KEY,
     apiSecret: parsedEnv.CLOUDINARY_API_SECRET
   },
-  sentryDsn: parsedEnv.SENTRY_DSN
+  sentryDsn: parsedEnv.SENTRY_DSN,
+  superAdmin: {
+    email: parsedEnv.SUPER_ADMIN_EMAIL,
+    username: parsedEnv.SUPER_ADMIN_USERNAME,
+    password: parsedEnv.SUPER_ADMIN_PASSWORD
+  }
 };

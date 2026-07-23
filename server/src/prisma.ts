@@ -72,3 +72,60 @@ function createPrismaMock() {
 // In development/test, we fall back to a mock proxy if no database URL is set.
 const isDbConfigured = !!config.databaseUrl;
 export const prisma = config.nodeEnv === "production" || isDbConfigured ? realPrisma : createPrismaMock();
+
+export async function ensureSuperAdminConfigured(): Promise<void> {
+  if (config.nodeEnv !== "production" && !isDbConfigured) {
+    return;
+  }
+
+  try {
+    // 1. Ensure basic roles exist
+    const rolesToUpsert = [
+      { name: "SUPER_ADMIN", description: "System super administrator with unrestricted access" },
+      { name: "ADMIN", description: "Standard administrator with general management access" },
+      { name: "EDITOR", description: "Content editor with write access to content modules" }
+    ];
+
+    for (const roleInfo of rolesToUpsert) {
+      await prisma.role.upsert({
+        where: { name: roleInfo.name },
+        update: { description: roleInfo.description },
+        create: {
+          name: roleInfo.name,
+          description: roleInfo.description,
+          permissions: roleInfo.name === "SUPER_ADMIN" ? ["*"] : []
+        }
+      });
+    }
+
+    // 2. Check if super admin credentials are provided in config
+    const saEmail = config.superAdmin.email;
+    const saUsername = config.superAdmin.username || "Super Admin";
+    const saPassword = config.superAdmin.password;
+
+    if (saEmail && saPassword) {
+      const superAdminRole = await prisma.role.findUnique({ where: { name: "SUPER_ADMIN" } });
+      if (!superAdminRole) {
+        throw new Error("SUPER_ADMIN role could not be resolved.");
+      }
+
+      const existingUser = await prisma.user.findUnique({ where: { email: saEmail } });
+      if (!existingUser) {
+        const hashedPassword = await bcrypt.hash(saPassword, 12);
+        await prisma.user.create({
+          data: {
+            name: saUsername,
+            email: saEmail,
+            passwordHash: hashedPassword,
+            roleId: superAdminRole.id,
+            status: "ACTIVE",
+            isActive: true
+          }
+        });
+        console.log(`[INFO] Initial SUPER_ADMIN account created successfully: ${saEmail}`);
+      }
+    }
+  } catch (error) {
+    console.error("[ERROR] Failed to ensure Super Admin configuration:", error);
+  }
+}

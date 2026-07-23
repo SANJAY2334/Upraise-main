@@ -152,7 +152,8 @@ describe("Integration Test Suite", () => {
       const body = (await res.json()) as any;
       assert.strictEqual(body.success, true);
       assert.ok(body.data.accessToken);
-      assert.ok(body.data.refreshToken);
+      const setCookie = res.headers.get("set-cookie");
+      assert.ok(setCookie && setCookie.includes("uprise_refresh_token"));
       assert.strictEqual(body.data.user.email, "admin@uprise.com");
       assert.strictEqual(body.data.user.role, "ADMIN");
       assert.ok(body.requestId);

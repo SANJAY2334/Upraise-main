@@ -11,6 +11,11 @@ const loginSchema = z.object({
   password: z.string().min(8)
 });
 
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8)
+});
+
 const authRepository = new AuthRepository();
 const authService = new AuthService(authRepository);
 const authController = new AuthController(authService);
@@ -21,3 +26,4 @@ authRouter.post("/login", validateBody(loginSchema), authController.login);
 authRouter.post("/refresh", authController.refresh);
 authRouter.post("/logout", authController.logout);
 authRouter.get("/me", requireAuth, authController.me);
+authRouter.post("/change-password", requireAuth, validateBody(changePasswordSchema), authController.changePassword);

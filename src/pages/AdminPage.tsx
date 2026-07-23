@@ -10,7 +10,8 @@ import {
   ProjectsPanel,
   MediaPanel,
   AnalyticsPanel,
-  AuditLogsPanel
+  AuditLogsPanel,
+  SuperAdminPanel
 } from "../features/admin";
 import { useToast, ErrorBoundary } from "../shared/components";
 import { useAuth } from "../shared/providers";
@@ -52,11 +53,17 @@ export default function AdminPage() {
     toast("success", "Signed out successfully.");
   };
 
+  const modules = [...adminModules];
+  const isSuperAdmin = state.status === "authenticated" && state.user.role === "SUPER_ADMIN";
+  if (isSuperAdmin) {
+    modules.push({ key: "Super Admin Portal", icon: Lock });
+  }
+
   return (
     <AdminLayout
       activeModule={activeModule}
       setActiveModule={setActiveModule}
-      adminModules={adminModules}
+      adminModules={modules}
       email={state.status === "authenticated" ? state.user.email : undefined}
       onLogout={handleLogout}
     >
@@ -69,6 +76,7 @@ export default function AdminPage() {
         {activeModule === "Media Library" && <MediaPanel />}
         {activeModule === "Analytics" && <AnalyticsPanel />}
         {activeModule === "Audit Logs" && <AuditLogsPanel />}
+        {activeModule === "Super Admin Portal" && <SuperAdminPanel />}
       </ErrorBoundary>
     </AdminLayout>
   );

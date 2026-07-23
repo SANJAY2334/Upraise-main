@@ -18,43 +18,60 @@ export class AuthService {
     private auditLog = writeAuditLog
   ) {}
 
-  async login(email: string, plainPassword: string): Promise<LoginResponseDTO> {
-    const user = await this.authRepo.findUserByEmail(email);
-    if (!user || !user.isActive) {
-      throw new UnauthorizedError("Invalid credentials.");
+  async login(
+    email: string,
+    plainPassword: string,
+    ip?: string,
+    userAgent?: string
+  ): Promise<LoginResponseDTO & { requirePasswordChange?: boolean }> {
+    try {
+      const user = await this.authRepo.findUserByEmail(email);
+      if (!user || !user.isActive) {
+        throw new UnauthorizedError("Invalid credentials.");
+      }
+
+      const valid = await bcrypt.compare(plainPassword, user.passwordHash);
+      if (!valid) {
+        throw new UnauthorizedError("Invalid credentials.");
+      }
+
+      const authUser: AuthUserDTO = {
+        id: user.id,
+        email: user.email,
+        role: user.role.name,
+        status: user.status
+      };
+
+      const refreshToken = signRefreshToken(authUser);
+
+      await this.authRepo.createSession({
+        userId: user.id,
+        refreshTokenHash: await bcrypt.hash(refreshToken, 12),
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) // 7 days
+      });
+
+      await this.auditLog({
+        userId: user.id,
+        action: "LOGIN_SUCCESS",
+        entity: "users",
+        entityId: user.id,
+        metadata: { ip, userAgent, email }
+      });
+
+      return {
+        accessToken: signAccessToken(authUser),
+        refreshToken,
+        user: authUser,
+        requirePasswordChange: user.status === "INVITED"
+      };
+    } catch (error) {
+      await this.auditLog({
+        action: "LOGIN_FAILURE",
+        entity: "users",
+        metadata: { ip, userAgent, email, reason: error instanceof Error ? error.message : "Unknown" }
+      });
+      throw error;
     }
-
-    const valid = await bcrypt.compare(plainPassword, user.passwordHash);
-    if (!valid) {
-      throw new UnauthorizedError("Invalid credentials.");
-    }
-
-    const authUser: AuthUserDTO = {
-      id: user.id,
-      email: user.email,
-      role: user.role.name
-    };
-
-    const refreshToken = signRefreshToken(authUser);
-
-    await this.authRepo.createSession({
-      userId: user.id,
-      refreshTokenHash: await bcrypt.hash(refreshToken, 12),
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) // 7 days
-    });
-
-    await this.auditLog({
-      userId: user.id,
-      action: "LOGIN",
-      entity: "users",
-      entityId: user.id
-    });
-
-    return {
-      accessToken: signAccessToken(authUser),
-      refreshToken,
-      user: authUser
-    };
   }
 
   async refresh(refreshToken: string): Promise<RefreshResponseDTO> {
@@ -63,6 +80,7 @@ export class AuthService {
         id: string;
         email: string;
         role: string;
+        status: string;
       };
 
       const sessions = await this.authRepo.findActiveSessionsByUserId(decoded.id);
@@ -86,7 +104,8 @@ export class AuthService {
       const user: AuthUserDTO = {
         id: decoded.id,
         email: decoded.email,
-        role: decoded.role
+        role: decoded.role,
+        status: decoded.status
       };
 
       return {
@@ -124,5 +143,37 @@ export class AuthService {
     } catch {
       // Ignore decoding or processing issues on logout
     }
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.authRepo.findUserById(userId);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedError("User is suspended or does not exist.");
+    }
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedError("Incorrect current password.");
+    }
+
+    const newHashedPassword = await bcrypt.hash(newPassword, 12);
+    await this.authRepo.updateUser(userId, {
+      passwordHash: newHashedPassword,
+      status: "ACTIVE"
+    } as any);
+
+    // Revoke all active sessions to secure the account
+    const sessions = await this.authRepo.findActiveSessionsByUserId(userId);
+    const now = new Date();
+    for (const s of sessions) {
+      await this.authRepo.updateSessionRevokedAt(s.id, now);
+    }
+
+    await this.auditLog({
+      userId,
+      action: "PASSWORD_RESET_FORCED",
+      entity: "users",
+      entityId: userId
+    });
   }
 }

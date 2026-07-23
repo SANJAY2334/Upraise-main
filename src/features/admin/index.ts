@@ -7,3 +7,4 @@ export { default as ProjectsPanel } from "./panels/ProjectsPanel";
 export { default as MediaPanel } from "./panels/MediaPanel";
 export { default as AnalyticsPanel } from "./panels/AnalyticsPanel";
 export { default as AuditLogsPanel } from "./panels/AuditLogsPanel";
+export { default as SuperAdminPanel } from "./panels/SuperAdminPanel";

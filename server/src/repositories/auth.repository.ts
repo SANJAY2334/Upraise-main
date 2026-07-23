@@ -9,6 +9,7 @@ export interface IAuthRepository {
   createSession(data: { userId: string; refreshTokenHash: string; expiresAt: Date }): Promise<Session>;
   findActiveSessionsByUserId(userId: string): Promise<Session[]>;
   updateSessionRevokedAt(sessionId: string, revokedAt: Date): Promise<Session>;
+  updateUser(id: string, data: Partial<User>): Promise<User>;
 }
 
 export class AuthRepository implements IAuthRepository {
@@ -51,6 +52,13 @@ export class AuthRepository implements IAuthRepository {
     return this.prismaClient.session.update({
       where: { id: sessionId },
       data: { revokedAt }
+    });
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    return this.prismaClient.user.update({
+      where: { id },
+      data
     });
   }
 }

@@ -10,6 +10,7 @@ const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const ChangePasswordPage = lazy(() => import("./pages/ChangePasswordPage"));
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
   const { state } = useAuth();
@@ -55,6 +56,7 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
+                  <Route path="/admin/change-password" element={<ChangePasswordPage />} />
                   <Route
                     path="/admin"
                     element={

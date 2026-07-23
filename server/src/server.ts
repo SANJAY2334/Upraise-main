@@ -18,6 +18,7 @@ import { contentRouter } from "./routes/content.js";
 import { csrfRouter } from "./routes/csrf.js";
 import { docsRouter } from "./routes/docs.js";
 import { mediaRouter } from "./routes/media.js";
+import { superAdminRouter } from "./routes/superAdmin.js";
 import { logger } from "./shared/logger.js";
 
 // Initialize Sentry
@@ -165,6 +166,7 @@ app.use("/api/contact", contactLimiter, contactRouter);
 app.use("/api/content", contentRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/media", mediaRouter);
+app.use("/api/super-admin", superAdminRouter);
 
 app.use(errorHandler);
 

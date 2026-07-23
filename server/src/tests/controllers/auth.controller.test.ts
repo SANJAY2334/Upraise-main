@@ -10,7 +10,8 @@ const mockLoginDTO = {
   user: {
     id: "user-123",
     email: "jane@example.com",
-    role: "ADMIN"
+    role: "ADMIN",
+    status: "ACTIVE"
   }
 };
 
@@ -18,8 +19,11 @@ class DummyAuthService extends AuthService {
   constructor() {
     super(null as any, null as any);
   }
-  override async login() {
-    return mockLoginDTO;
+  override async login(_email: string, _plainPassword: string, _ip?: string, _userAgent?: string) {
+    return {
+      ...mockLoginDTO,
+      requirePasswordChange: false
+    };
   }
   override async refresh() {
     return { accessToken: "new-access-token" };
@@ -41,7 +45,10 @@ describe("AuthController Unit Tests", () => {
 
     const req = {
       id: "req-1",
-      body: { email: "jane@example.com", password: "password123" }
+      body: { email: "jane@example.com", password: "password123" },
+      headers: {},
+      socket: {},
+      ip: "127.0.0.1"
     } as unknown as Request;
 
     const res = {
