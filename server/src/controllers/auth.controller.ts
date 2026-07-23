@@ -11,10 +11,13 @@ export class AuthController {
       const { email, password } = req.body;
       const data = await this.authService.login(email, password);
 
+      const isProd = config.nodeEnv === "production";
+      const isSecure = req.secure || req.headers?.["x-forwarded-proto"] === "https" || isProd;
+
       res.cookie("uprise_refresh_token", data.refreshToken, {
         httpOnly: true,
-        secure: config.nodeEnv === "production",
-        sameSite: "lax",
+        secure: isSecure,
+        sameSite: isSecure ? "none" : "lax",
         path: "/api/auth",
         maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
       });
@@ -52,10 +55,13 @@ export class AuthController {
     try {
       const refreshToken = req.cookies?.uprise_refresh_token ?? req.body?.refreshToken;
 
+      const isProd = config.nodeEnv === "production";
+      const isSecure = req.secure || req.headers?.["x-forwarded-proto"] === "https" || isProd;
+
       res.clearCookie("uprise_refresh_token", {
         httpOnly: true,
-        secure: config.nodeEnv === "production",
-        sameSite: "lax",
+        secure: isSecure,
+        sameSite: isSecure ? "none" : "lax",
         path: "/api/auth"
       });
 

@@ -82,9 +82,21 @@ app.use((_req, res, next) => {
   next();
 });
 
+const allowedOrigins = [config.clientUrl.replace(/\/$/, ""), config.siteUrl.replace(/\/$/, "")];
+
 app.use(
   cors({
-    origin: config.clientUrl,
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+      const normalized = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(normalized)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token", "x-request-id"],
