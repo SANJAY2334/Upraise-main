@@ -36,13 +36,26 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   });
 
   // Generic internal server error
-  logger.error({
-    msg: err instanceof Error ? err.message : "Unexpected server error",
-    stack: err instanceof Error ? err.stack : undefined,
-    requestId: reqId,
-    url: req.originalUrl,
-    method: req.method
-  });
+  const errorObj = err instanceof Error ? err : new Error(String(err));
+  const isPrismaError = !!(err && typeof err === "object" && ("code" in err || "meta" in err));
+
+  logger.error(
+    {
+      message: errorObj.message,
+      name: errorObj.name,
+      stack: errorObj.stack,
+      requestId: reqId,
+      url: req.originalUrl,
+      method: req.method,
+      ...(isPrismaError
+        ? {
+            prismaCode: (err as any).code,
+            prismaMeta: (err as any).meta
+          }
+        : {})
+    },
+    "Unexpected internal server error occurred"
+  );
 
   return res.status(500).json({
     success: false,

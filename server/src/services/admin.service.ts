@@ -320,6 +320,7 @@ export class AdminService {
   }
 
   private toMediaAssetDTO(m: MediaAsset): MediaAssetDTO {
+    const date = m.createdAt ? (m.createdAt instanceof Date ? m.createdAt : new Date(m.createdAt)) : new Date();
     return {
       id: m.id,
       publicId: m.publicId,
@@ -330,7 +331,7 @@ export class AdminService {
       width: m.width ?? null,
       height: m.height ?? null,
       alt: m.alt ?? null,
-      createdAt: m.createdAt.toISOString()
+      createdAt: date.toISOString()
     };
   }
 }

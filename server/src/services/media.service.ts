@@ -64,8 +64,13 @@ export class MediaService {
     width: number | null;
     height: number | null;
     alt: string | null;
-    createdAt: Date;
+    createdAt: Date | string | null | undefined;
   }): MediaAssetDTO {
+    const date = asset.createdAt
+      ? asset.createdAt instanceof Date
+        ? asset.createdAt
+        : new Date(asset.createdAt)
+      : new Date();
     return {
       id: asset.id,
       publicId: asset.publicId,
@@ -76,7 +81,7 @@ export class MediaService {
       width: asset.width ?? null,
       height: asset.height ?? null,
       alt: asset.alt ?? null,
-      createdAt: asset.createdAt.toISOString()
+      createdAt: date.toISOString()
     };
   }
 }

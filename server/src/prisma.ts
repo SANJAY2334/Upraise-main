@@ -53,7 +53,13 @@ function createPrismaMock() {
               if (method === "create" || method === "update") {
                 const arg = args[0] as { data?: Record<string, unknown> } | undefined;
                 const data = arg?.data || {};
-                return { id: `mock-${Date.now()}`, ...data };
+                const now = new Date();
+                return {
+                  id: `mock-${Date.now()}`,
+                  createdAt: now,
+                  updatedAt: now,
+                  ...data
+                };
               }
               if (method === "delete") {
                 return { id: "mock-deleted" };
